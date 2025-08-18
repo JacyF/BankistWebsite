@@ -1,8 +1,5 @@
 'use strict';
 
-///////////////////////////////////////
-// Modal window
-
 // ELEMENTS
 const modal = document.querySelector('.modal');
 const overlay = document.querySelector('.overlay');
@@ -15,12 +12,15 @@ const tabsContainer = document.querySelector('.operations__tab-container');
 const tabContent = document.querySelectorAll('.operations__content');
 const nav = document.querySelector('.nav');
 
+// MODAL WINDOWS
+// OPEN
 const openModal = function (e) {
   e.preventDefault();
   modal.classList.remove('hidden');
   overlay.classList.remove('hidden');
 };
 
+// CLOSE
 const closeModal = function () {
   modal.classList.add('hidden');
   overlay.classList.add('hidden');
@@ -37,35 +37,15 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
-
 // SCROLL BUTTON
 btnScrollTo.addEventListener('click', function (e) {
-  const s1coords = section1.getBoundingClientRect();
-  console.log(s1coords);
-
-  // window.scrollTo(s1coords.left + window.scrollX, s1coords.top+window.scrollY);
-
-  // window.scrollTo({
-  //   left: s1coords.left + window.scrollX, 
-  //   top: s1coords.top+window.scrollY,
-  //   behavior: 'smooth',
-  // })
-
   section1.scrollIntoView({
     behavior: 'smooth'
   })
 })
 
 // PAGE NAVIGATION
-// document.querySelectorAll('.nav__link').forEach(function(el){
-//   el.addEventListener('click', function(e){
-//     e.preventDefault();
-//     const id = this.getAttribute('href');
-//     document.querySelector(id).scrollIntoView({behavior: 'smooth'});
-//   })
-// })
-
-// event delegation
+// EVENT DELEGATION
 document.querySelector('.nav__links').addEventListener('click', function (e) {
   e.preventDefault()
 
@@ -79,8 +59,6 @@ document.querySelector('.nav__links').addEventListener('click', function (e) {
 })
 
 // TABBED COMPONENT
-
-
 tabsContainer.addEventListener('click', function (e) {
   const clicked = e.target.closest('.operations__tab');
 
@@ -100,7 +78,6 @@ tabsContainer.addEventListener('click', function (e) {
 })
 
 // MENU FADE ANIMATION
-
 const handleHover = function (e, opacity) {
   if (e.target.classList.contains('nav__link')) {
 
@@ -122,7 +99,7 @@ nav.addEventListener('mouseout', handleHover.bind(1));
 const header = document.querySelector('.header');
 const nabHeight = nav.getBoundingClientRect().height;
 
-const stickNav = function(entries) {
+const stickNav = function (entries) {
   const [entry] = entries;
 
   if (!entry.isIntersecting) nav.classList.add('sticky');
@@ -136,17 +113,132 @@ const headerObserver = new IntersectionObserver(stickNav, {
 });
 headerObserver.observe(header);
 
+// REVEAL SECTIONS
+const allSections = document.querySelectorAll('.section');
 
+const revealSection = function (entries, observer) {
+  entries.forEach(entry => {
 
+    if (!entry.isIntersecting) return;
 
+    entry.target.classList.remove('section--hidden');
+    observer.unobserve(entry.target);
+  })
+}
 
-///////////////////
-// lecture
-// const randoInt = (min, max) => Math.trunc(Math.random()*(max-min+1) + min);
+const sectionObserver = new IntersectionObserver(revealSection, {
+  root: null,
+  threshold: 0.25,
+})
 
-// const randomColor = `rgb(${randoInt(0, 255)}, ${randoInt(0, 255)}, ${randoInt(0, 255)})`;
+allSections.forEach(section => {
+  sectionObserver.observe(section);
+  section.classList.add('section--hidden');
+})
 
-// console.log(randomColor);
+// LAZY LOADING IMAGES
+const imgTargets = document.querySelectorAll('img[data-src]');
 
+const loading = function (entries, observer) {
+  const [entry] = entries;
 
-// comimit - hover nav, sticky navigation, tabbed content, smooth scroll
+  if (!entry.isIntersecting) return;
+
+  // REPLACE SRC WITH DATA-SRC
+  entry.target.src = entry.target.dataset.src;
+
+  entry.target.addEventListener('load', function () {
+    entry.target.classList.remove('lazy-img')
+  })
+
+  observer.unobserve(entry.target);
+};
+
+const imgObserver = new IntersectionObserver(loading, {
+  root: null,
+  threshold: 0.15,
+  rootMargin: '200px'
+});
+
+imgTargets.forEach(img => imgObserver.observe(img));
+
+// SLIDES
+const slider = function () {
+
+  let curSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const maxSlide = slides.length;
+  const btnLeft = document.querySelector('.slider__btn--left');
+  const btnRight = document.querySelector('.slider__btn--right');
+  const dotContainer = document.querySelector('.dots');
+
+  // FUNCTIONS
+  const createDots = function () {
+    slides.forEach(function (_, i) {
+      dotContainer.insertAdjacentHTML('beforeend', `<button class='dots__dot' data-slide='${i}'></button>`)
+    })
+  }
+
+  const activeDot = function (slide) {
+    document.querySelectorAll('.dots__dot').forEach(dot => dot.classList.remove('dots__dot--active'));
+
+    document.querySelector(`.dots__dot[data-slide="${slide}"]`).classList.add('dots__dot--active');
+  }
+
+  const goToSlide = function (slide) {
+    slides.forEach((s, i) => s.style.transform = `translateX(${100*(i-slide)}%)`);
+  }
+
+  // NEXT SLIDE
+  const nextSlide = function () {
+    if (curSlide === maxSlide - 1) {
+      curSlide = 0;
+    } else {
+      curSlide++;
+    }
+
+    goToSlide(curSlide);
+    activeDot(curSlide);
+  }
+
+  // PREVIOUS SLIDE
+  const prevSlide = function () {
+    if (curSlide === 0) {
+      curSlide = maxSlide - 1;
+    } else {
+      curSlide--;
+    }
+
+    goToSlide(curSlide);
+    activeDot(curSlide);
+  }
+
+  const init = function () {
+    goToSlide(0);
+    createDots();
+    activeDot(0)
+  }
+
+  init();
+
+  // EVENT HANDLER
+  btnLeft.addEventListener('click', prevSlide);
+  btnRight.addEventListener('click', nextSlide);
+
+  document.addEventListener('keydown', function (e) {
+
+    if (e.key === 'ArrowLeft') prevSlide();
+    e.key === 'ArrowRight' && nextSlide();
+  })
+
+  dotContainer.addEventListener('click', function (e) {
+    if (e.target.classList.contains('dots__dot')) {
+
+      curSlide = Number(e.target.dataset.slide);
+      goToSlide(curSlide);
+      activeDot(curSlide);
+    }
+  })
+}
+
+slider();
