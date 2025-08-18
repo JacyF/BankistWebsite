@@ -12,7 +12,7 @@ const tabsContainer = document.querySelector('.operations__tab-container');
 const tabContent = document.querySelectorAll('.operations__content');
 const nav = document.querySelector('.nav');
 
-// MODAL WINDOWS
+/* MODAL WINDOWS */
 // OPEN
 const openModal = function (e) {
   e.preventDefault();
@@ -38,7 +38,7 @@ document.addEventListener('keydown', function (e) {
 });
 
 // SCROLL BUTTON
-btnScrollTo.addEventListener('click', function (e) {
+btnScrollTo.addEventListener('click', function () {
   section1.scrollIntoView({
     behavior: 'smooth'
   })
@@ -69,7 +69,7 @@ tabsContainer.addEventListener('click', function (e) {
     t.classList.remove('operations__tab--active');
   });
 
-  tabContent.forEach(content => content.classList.remove('operations__content--active'))
+  tabContent.forEach(content => content.classList.remove('operations__content--active'));
 
   clicked.classList.add('operations__tab--active');
 
@@ -78,7 +78,7 @@ tabsContainer.addEventListener('click', function (e) {
 })
 
 // MENU FADE ANIMATION
-const handleHover = function (e, opacity) {
+const handleHover = function (e) {
   if (e.target.classList.contains('nav__link')) {
 
     const link = e.target;
@@ -148,7 +148,7 @@ const loading = function (entries, observer) {
   entry.target.src = entry.target.dataset.src;
 
   entry.target.addEventListener('load', function () {
-    entry.target.classList.remove('lazy-img')
+    entry.target.classList.remove('lazy-img');
   })
 
   observer.unobserve(entry.target);
@@ -157,7 +157,7 @@ const loading = function (entries, observer) {
 const imgObserver = new IntersectionObserver(loading, {
   root: null,
   threshold: 0.15,
-  rootMargin: '200px'
+  rootMargin: '200px',
 });
 
 imgTargets.forEach(img => imgObserver.observe(img));
@@ -216,7 +216,7 @@ const slider = function () {
   const init = function () {
     goToSlide(0);
     createDots();
-    activeDot(0)
+    activeDot(0);
   }
 
   init();
